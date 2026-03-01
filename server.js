@@ -1,8 +1,9 @@
 const express = require('express');
 const session = require('express-session');
+
 const pool = require('./db'); // PostgreSQL config
 const bcrypt = require('bcryptjs');
-
+const pgSession = require('connect-pg-simple')(session);
 const path = require('path');
 require('dotenv').config();
 
@@ -14,13 +15,24 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true}));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session setup
+
+app.set('trust proxy', 1); // IMPORTANT for Vercel
+
 app.use(session({
-  secret: 'blog123',
+  store: new pgSession({
+    pool: pool,
+    tableName: 'user_sessions'
+  }),
+  secret: process.env.SESSION_SECRET || 'blog123',
   resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false } // use true only with HTTPS
+  saveUninitialized: false,
+  cookie: {
+    secure: true,      // must be true in production
+    sameSite: 'none'   // required for cross-site cookies
+  }
 }));
+
+
 
 // Middleware to protect pages
 function ensureAuthenticated(req, res, next) {
