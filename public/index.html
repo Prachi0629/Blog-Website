@@ -95,14 +95,22 @@ are born from genuine curiosity about others.</p>
 
 <script >
    
-    fetch('/check-session')
-    .then(res => {
+    fetch('/check-session',
+ {
+    credentials: "include"
+})
+    
+ .then(res => {
         if(!res.ok){
             window.location.href='/login-register.html';
         }
     });
-
-    fetch('/get-user')
+    
+    fetch('/get-user',
+         {
+    credentials: "include"
+})
+    
     .then(res => res.json())
     .then(user => {
         document.getElementById("user-email").textContent=user-email;
